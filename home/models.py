@@ -15,6 +15,10 @@ class UserProfileManager(BaseUserManager):
         email = self.normalize_email(email)
         print(email)
         user = self.model(email=email, username=username)
+
+        user.set_password(password)
+        user.save(using=self._db)
+
         regex = r'\b[A-Za-z0-9._%+-]+@ourorg.in'
         if re.fullmatch(regex,email):
             print('here1')
@@ -24,25 +28,24 @@ class UserProfileManager(BaseUserManager):
             print('inside student------------',email)
             g = Group.objects.filter(name='Student')
         if len(g):
+            print(g)
             user.groups.set(g)
-
-        user.set_password(password)
-        user.save(using=self._db)
-
         return user
 
     def create_superuser(self, email, username, password):
         """Create and save a new superuser with given details"""
 
         user = self.create_user(email, username, password)
+        user.is_superuser = True
+        user.is_staff = True
         regex = r'\b[A-Za-z0-9._%+-]+admin@ourorg.in'
         if re.fullmatch(regex,email):
             g = Group.objects.filter(name='Admin')
+        else:
+            return None
+        user.save(using=self._db)
         if len(g):
             user.groups.set(g)
-        user.is_superuser = True
-        user.is_staff = True
-        user.save(using=self._db)
 
         return user
 

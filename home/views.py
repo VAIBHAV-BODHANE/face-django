@@ -15,18 +15,26 @@ import os
 from datetime import datetime
 from django.contrib.auth.decorators import login_required
 
-from .forms import CreateUserForm
+from home.models import UserProfile
+
+from .forms import RegistrationForm
 
 
 def registerPage(request):
-    form = CreateUserForm()
+    form = RegistrationForm()
 
     if request.method == 'POST':
-        form = CreateUserForm(request.POST)
+        form = RegistrationForm(request.POST)
         if form.is_valid():
             form.save()
-            user = form.cleaned_data.get('username')
-            messages.success(request, 'Account was created for ' + user )
+            # user = UserProfile.objects.create_user(email=form.cleaned_data.get('email'),username=form.cleaned_data.get('username'), password=form.cleaned_data.get('password1'))
+            # user.save()
+            username = form.cleaned_data.get('username')
+            email = form.cleaned_data.get('email')
+            raw_password = form.cleaned_data.get('password1')
+            auth = authenticate(username)
+            
+            messages.success(request, 'Account was created for ' + username )
             
                 
 
