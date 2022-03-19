@@ -6,11 +6,22 @@
     <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
 </div>
 {% if role == 'Student' %}
-    <h3>THis</h3>
+    <div class="container"><p>Current Lecture: {{emp}}</p></div>
 {% endif %}
 
 {% if role == 'Teacher' %}
-<h3>Teacher</h3>
+    <div class="container"></div>
+{% endif %}
+
+{% if role == 'Admin' %}
+    <div class="container">
+        <select class="custom-select">
+            <option selected>Select Subject</option>
+            {% for i in all_subject%}
+            <option value="{{i.0}}">{{i.1}}</option>
+            {% endfor %}
+        </select>
+    </div>
 {% endif %}
 
 {% endblock body %}

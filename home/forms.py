@@ -6,8 +6,6 @@ from django import forms
 
 
 
-
-
 class RegistrationForm(UserCreationForm):
 	email = forms.EmailField(max_length=255, help_text='Required. Add a valid email address')
 

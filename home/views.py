@@ -15,7 +15,7 @@ import os
 from datetime import datetime
 from django.contrib.auth.decorators import login_required
 
-from home.models import UserProfile
+from home.models import SubjectMaster, UserProfile
 
 from .forms import RegistrationForm
 
@@ -72,18 +72,22 @@ def logoutUser(request):
 
 @login_required(login_url='/login/')
 def index(request):
-    role = request.user.groups.all()
+    role = request.user.groups.all()[0].name
+    all_subject =  SubjectMaster.objects.all().values_list('id','name')
+    print(all_subject)
     print(role)
     if role:
-        return render(request, 'home.html', {'role': role[0].name})
+        return render(request, 'home.html', {'role': role, 'all_subject': all_subject})
     return render(request, 'home.html')
 
 
 @login_required(login_url='/login/')
 def attendance(request):
-    return render(request,'attendance.html')
+    role = request.user.groups.all()[0].name
+    return render(request,'attendance.html', {'role': role})
 
 
 @login_required(login_url='/login/')
 def more(request):
-    return render(request,'more.html')
+    role = request.user.groups.all()[0].name
+    return render(request,'more.html', {'role': role})
