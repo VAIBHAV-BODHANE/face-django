@@ -1,3 +1,4 @@
+from distutils.command.upload import upload
 from ssl import create_default_context
 from django.db import models
 from django.contrib.auth.models import BaseUserManager, AbstractBaseUser, PermissionsMixin, Group, User, Permission
@@ -25,7 +26,6 @@ class UserProfileManager(BaseUserManager):
             g = Group.objects.filter(name='Teacher')
             user.is_staff=True
         else:
-            print('inside student------------',email)
             g = Group.objects.filter(name='Student')
         if len(g):
             print(g)
@@ -54,6 +54,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
     """Database model for use in a system"""
     email = models.EmailField(max_length=255, unique=True)
     username = models.CharField(max_length=255, unique=True)
+    profile_pic = models.ImageField(upload_to='home/student/images', blank=True, null=True)
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
 
@@ -113,5 +114,19 @@ class LectureScheduler(models.Model):
     updated = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return self.teacher.username + '-' + self.subject 
+        return self.teacher.teacher.username + '-' + self.subject.name
+
+
+class LectureAttendance(models.Model):
+    """Student attendance record"""
+    lecture_schedule = models.ForeignKey(LectureScheduler, on_delete=models.CASCADE)
+    student = models.ForeignKey(UserProfile, on_delete=models.CASCADE)
+    is_present = models.CharField(max_length=100, choices=( ('P', 'Present'), ('A', 'Absent') ), default='P')
+    created = models.DateTimeField(auto_now_add=True)
+    modified = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return self.lecture_schedule.subject.name + '-' + self.student.username + '-' + self.is_present
+    
+
     

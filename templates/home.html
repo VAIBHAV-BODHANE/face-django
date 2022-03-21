@@ -6,22 +6,111 @@
     <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
 </div>
 {% if role == 'Student' %}
-    <div class="container"><p>Current Lecture: {{emp}}</p></div>
+    {% if profile_pic == True %}
+        {% if curr_lecture == 0 %}
+            <div class="container my-5">
+                <p><span class="fw-bold">Current Lecture</span>: There is no current lecture going on. Please, check for upcoming lectures.</p>
+                
+            </div>
+        {% else %}        
+            <div class="container my-5">
+                <p><span class="fw-bold flex-d">Current Lecture</span>: {{curr_lecture.0|title}} / {{curr_lecture.1}}, {{curr_lecture.2}} - {{curr_lecture.3}}  </p>
+                <button onclick="attendance('{{curr_lecture.4}}')" class="btn btn-primary">Mark Present</button>
+            </div>
+        {% endif %}
+        
+        {% if upcoming_lecture == 0 %}
+            <div class="container my-5">
+                <p><span class="fw-bold">Upcoming Lecture</span>: There is no lecture for today!</p>
+            </div>
+        {% else %} 
+            {% for i in upcoming_lecture %}
+                <div class="container my-5">
+                    <p><span class="fw-bold">Upcoming Lecture</span>: {{i.0|title}} / {{i.1}}, {{i.2}} - {{i.3}}</p>
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% else %}
+    <div class="container my-5">
+        <h3 class="mb-4">Please! Upload profile picture first!</h3>
+        <form action="/add_profile_pic/?student_id={{user_id}}" method="POST" enctype="multipart/form-data">{% csrf_token %}
+            <input type="file" name="profile_pic" required>
+            <input type="submit">
+        </form>
+    </div>
+    {% endif %}
 {% endif %}
 
 {% if role == 'Teacher' %}
-    <div class="container"></div>
+    <div class="container my-5">
+        <form action='/schedule_lecture_time/'  method="POST">{% csrf_token %}
+            <div class="form-group row">
+                <input type="hidden" name="teacher_id" id="teacher_id" value="{{user_id}}"/>
+                <label for="ForSubject" class="col-sm-1 col-form-label" >{{user}}</label>
+                <div class="col-sm-2">
+                    <select class="form-control" name="subject_id" id="subjectFormSelect">
+                        {% for i in your_subject%}
+                        <option value="{{i.0}}">{{i.1}}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-sm-3 row">
+                    <label for="fromTimeLabel" name="fromTimeLabel" class="col-sm-2 col-form-label" >From:</label>
+                    <div class="col-sm-2">
+                        <input  type="datetime-local" id="fromT" name="fromTime">
+                    </div>
+                </div>
+                <div class="col-sm-3 row">
+                    <label for="toTimeLabel" name="toTimeLabel" class="col-sm-2 col-form-label" >To:</label>
+                    <div class="col-sm-2">
+                        <input  type="datetime-local" id="toT" name="toTime">
+                    </div>
+                </div>
+                <div class="col-sm-1">
+                    <button type="submit" class="btn btn-primary">Submit</button>
+                </div>
+            </div>
+        </form>
+    </div>
 {% endif %}
 
 {% if role == 'Admin' %}
-    <div class="container">
-        <select class="custom-select">
-            <option selected>Select Subject</option>
-            {% for i in all_subject%}
-            <option value="{{i.0}}">{{i.1}}</option>
-            {% endfor %}
-        </select>
-    </div>
+<div class="container flex-d">
+    <form action='/add_teacher_subject/'  method="POST">
+    {% csrf_token %}
+        <div class="form-group">
+            <select class="form-control" name="subject_id" id="subjectFormSelect">
+                {% for i in all_subject%}
+                <option value="{{i.0}}">{{i.1}}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="form-group">
+            <select class="form-control" name="teacher_id" id="teacherFormSelect">
+                {% for i in all_teacher%}
+                <option value="{{i.id}}">{{i.username}}</option>
+                {% endfor %}
+
+            </select>
+          </div>
+        <button type="submit" class="btn btn-primary">Add</button>
+    </form>
+
+    <h3>{{created}}</h3>
+</div>
+
 {% endif %}
+<script>
+    {% if con %}
+        alert('Success!');
+        document.location = '/home/';
+    {% endif %}
+
+    function attendance(lec) {
+        console.log(lec)
+        document.location=`/student_face_recognition/?lecSche=${lec}`;
+    }
+</script>
+
 
 {% endblock body %}

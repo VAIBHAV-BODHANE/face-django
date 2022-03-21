@@ -1,13 +1,14 @@
+from pyexpat import model
 from django.forms import ModelForm
 from django.contrib.auth.forms import UserCreationForm
 # from django.contrib.auth.models import User
-from home.models import UserProfile
+from home.models import UserProfile, TeacherSubjects
 from django import forms
 
 
 
 class RegistrationForm(UserCreationForm):
-	email = forms.EmailField(max_length=255, help_text='Required. Add a valid email address')
+	email = forms.EmailField(max_length=255, help_text='Required. Add a valid email address')\
 
 	class Meta:
 		model = UserProfile

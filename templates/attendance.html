@@ -1,8 +1,14 @@
 {% extends 'base.html' %}
 {% block title %}Attendance{% endblock title %}
 {% block body %}
-<form action="/action_page.php">
-    <input type="file" id="myFile" name="filename">
-    <input type="submit">
-</form>
+
+{% if role == 'Student' %}
+<div class="container my-5">
+    <form action="/action_page.php">
+        <input type="file" id="myFile" name="filename">
+        <input type="submit">
+    </form>
+</div>
+{% endif %}
+
 {% endblock body %}
