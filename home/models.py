@@ -38,12 +38,12 @@ class UserProfileManager(BaseUserManager):
         user = self.create_user(email, username, password)
         user.is_superuser = True
         user.is_staff = True
+        user.save(using=self._db)
         regex = r'\b[A-Za-z0-9._%+-]+admin@ourorg.in'
         if re.fullmatch(regex,email):
             g = Group.objects.filter(name='Admin')
         else:
             return None
-        user.save(using=self._db)
         if len(g):
             user.groups.set(g)
 
@@ -121,7 +121,7 @@ class LectureAttendance(models.Model):
     """Student attendance record"""
     lecture_schedule = models.ForeignKey(LectureScheduler, on_delete=models.CASCADE)
     student = models.ForeignKey(UserProfile, on_delete=models.CASCADE)
-    is_present = models.CharField(max_length=100, choices=( ('P', 'Present'), ('A', 'Absent') ), default='P')
+    is_present = models.CharField(max_length=100, choices=( ('P', 'Present'), ('A', 'Absent'), ('L', "Late") ), default='P')
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)
 

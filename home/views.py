@@ -3,6 +3,7 @@ import imp
 import profile
 import re
 import django
+import time
 from django.shortcuts import render, redirect, HttpResponse
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib import messages
@@ -110,6 +111,13 @@ def index(request):
             else:
                 all_teacher = all_teacher.exclude(id=i.id)
     if role == 'Teacher':
+        curr = datetime.now()
+        date_end = (datetime.now().replace(hour=0,minute=0,second=0,microsecond=0) + timedelta(days=1)) + timedelta(hours=3)
+        curr_lecture = LectureScheduler.objects.filter(start_time__lte=curr, end_time__gte=curr).values_list('teacher__teacher__username', 'subject__name', 'start_time', 'end_time', 'id')
+        if len(curr_lecture) == 0:
+            curr_lecture = 0
+        else:
+            curr_lecture = curr_lecture[0]
         your_subject = TeacherSubjects.objects.filter(teacher__id=request.user.id).values_list('subject__id', 'subject__name')
     if role:
         return render(request, 'home.html', {'role': role, 'user': (request.user.username).title(), 'user_id': request.user.id, 'all_subject': all_subject, 'all_teacher': all_teacher, 'your_subject': your_subject, 'curr_lecture': curr_lecture, 'upcoming_lecture': upcoming_lecture, 'profile_pic': profile_pic})
@@ -119,7 +127,17 @@ def index(request):
 @login_required(login_url='/login/')
 def attendance(request):
     role = request.user.groups.all()[0].name
-    return render(request,'attendance.html', {'role': role})
+    last_7_days = datetime.now() - timedelta(days=7)
+    att_details = None
+    if role == 'Teacher':
+        att_details = LectureAttendance.objects.filter(lecture_schedule__teacher__teacher=request.user, created__gte = last_7_days).values_list('lecture_schedule__subject__name', 'lecture_schedule__teacher__teacher__username', 'student__username', 'is_present')
+    elif role == 'Admin':
+        att_details = LectureAttendance.objects.filter(created__gte = last_7_days).values_list('lecture_schedule__subject__name', 'lecture_schedule__teacher__teacher__username', 'student__username', 'is_present')
+    else:
+        att_details = LectureAttendance.objects.filter(student=request.user, created__gte = last_7_days).values_list('lecture_schedule__subject__name', 'lecture_schedule__teacher__teacher__username', 'student__username', 'is_present')
+
+        
+    return render(request,'attendance.html', {'role': role, 'attendance': att_details})
 
 
 @login_required(login_url='/login/')
@@ -217,16 +235,18 @@ def student_face_recognition(request):
     print('Encoding Complete')
 
     cap = cv2.VideoCapture(0)
-
+    name = None
     # while True:
     success, img = cap.read()
-# img = captureScreen()
+    # img = captureScreen()
+    print(success)
+    print(img)
     imgS = cv2.resize(img, (0, 0), None, 0.25, 0.25)
     imgS = cv2.cvtColor(imgS, cv2.COLOR_BGR2RGB)
 
     facesCurFrame = face_recognition.face_locations(imgS)
     encodesCurFrame = face_recognition.face_encodings(imgS, facesCurFrame)
-    name = None
+    
     for encodeFace, faceLoc in zip(encodesCurFrame, facesCurFrame):
         matches = face_recognition.compare_faces(encodeListKnown, encodeFace)
         faceDis = face_recognition.face_distance(encodeListKnown, encodeFace)
@@ -234,14 +254,15 @@ def student_face_recognition(request):
         matchIndex = np.argmin(faceDis)
 
         if matches[matchIndex]:
-            name = classNames[matchIndex].upper()
+            name = classNames[matchIndex]
 # print(name)
             y1, x2, y2, x1 = faceLoc
             y1, x2, y2, x1 = y1 * 4, x2 * 4, y2 * 4, x1 * 4
             cv2.rectangle(img, (x1, y1), (x2, y2), (0, 255, 0), 2)
             cv2.rectangle(img, (x1, y2 - 35), (x2, y2), (0, 255, 0), cv2.FILLED)
             cv2.putText(img, name, (x1 + 6, y2 - 6), cv2.FONT_HERSHEY_COMPLEX, 1, (255, 255, 255), 2)
-
+        #     time.sleep(5)
+        # break
     index = classNames.index(name)
     u = UserProfile.objects.get(profile_pic='/media/'+str(myList[index]))
     res = markAttendance(u,lecSche)
@@ -255,7 +276,12 @@ def student_face_recognition(request):
 def markAttendance(stu_obj, lec_obj):
     """Mark the attendance"""
     lecture = LectureScheduler.objects.get(id=lec_obj)
-    attendance = LectureAttendance(student=stu_obj,lecture_schedule=lecture)
+    start_time = datetime.strptime(lecture.start_time)
+    tym_diff = (datetime.now() - start_time).seconds
+    if tym_diff > 750:
+        attendance = LectureAttendance(student=stu_obj,lecture_schedule=lecture,is_present='L')
+    else:
+        attendance = LectureAttendance(student=stu_obj,lecture_schedule=lecture)
     attendance.save()
     return True
 

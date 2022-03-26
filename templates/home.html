@@ -15,7 +15,6 @@
         {% else %}        
             <div class="container my-5">
                 <p><span class="fw-bold flex-d">Current Lecture</span>: {{curr_lecture.0|title}} / {{curr_lecture.1}}, {{curr_lecture.2}} - {{curr_lecture.3}}  </p>
-                <button onclick="attendance('{{curr_lecture.4}}')" class="btn btn-primary">Mark Present</button>
             </div>
         {% endif %}
         
@@ -71,6 +70,17 @@
                 </div>
             </div>
         </form>
+        {% if curr_lecture == 0 %}
+            <div class="container my-5">
+                <p><span class="fw-bold">Current Lecture</span>: There is no current lecture going on. Please, check for upcoming lectures.</p>
+                
+            </div>
+        {% else %}        
+            <div class="container my-5">
+                <p><span class="fw-bold flex-d">Current Lecture</span>: {{curr_lecture.0|title}} / {{curr_lecture.1}}, {{curr_lecture.2}} - {{curr_lecture.3}}  </p>
+                <button onclick="attendance('{{curr_lecture.4}}')" class="btn btn-primary">Mark Present</button>
+            </div>
+        {% endif %}
     </div>
 {% endif %}
 

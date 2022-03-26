@@ -2,13 +2,29 @@
 {% block title %}Attendance{% endblock title %}
 {% block body %}
 
-{% if role == 'Student' %}
 <div class="container my-5">
-    <form action="/action_page.php">
-        <input type="file" id="myFile" name="filename">
-        <input type="submit">
-    </form>
+    <table class="table">
+        <thead>
+          <tr>
+            <th scope="col">Subject Name</th>
+            <th scope="col">Teacher Name</th>
+            <th scope="col">Student Name</th>
+            <th scope="col">Attendance</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% if attendace != None %}
+          {% for i in attendance %}
+          <tr>
+            <th scope="row">{{i.0}}</th>
+            <td>{{i.1}}</td>
+            <td>{{i.2}}</td>
+            <td>{{i.3}}</td>
+          </tr>
+          {% endfor %}
+          {% endif %}
+        </tbody>
+      </table>
 </div>
-{% endif %}
 
 {% endblock body %}
